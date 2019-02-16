@@ -14,6 +14,7 @@ export const Main = () => {
         localStorage.removeItem('user');
         setUser(null);
     };
+    const enabled = false;
     return (
         <Layout>
             <Sider trigger={null} collapsible collapsed={collapsed}>
@@ -21,22 +22,14 @@ export const Main = () => {
                 <Menu
                     theme="dark"
                     mode="inline"
-                    defaultSelectedKeys={['1']}
+                    // defaultSelectedKeys={['1']}
                     style={{ height: '100vh' }}
                 >
-                    <Menu.Item key="1">
-                        <Icon type="user" />
-                        <span>nav 1</span>
-                    </Menu.Item>
-                    <Menu.Item key="2">
-                        <Icon type="video-camera" />
-                        <span>nav 2</span>
-                    </Menu.Item>
-                    <Menu.Item key="3">
-                        <Icon type="upload" />
-                        <span>nav 3</span>
-                    </Menu.Item>
-                    <Menu.Item key="4" onClick={logout}>
+                    <Menu.Item key="1" style={{visibility: enabled ? 'visible' : 'hidden' }}>
+                            <Icon type="arrow-left" />
+                            <span>Return</span>
+                        </Menu.Item>
+                    <Menu.Item key="2" onClick={logout}>
                         <Icon type="logout" />
                         <span>Logout</span>
                     </Menu.Item>
@@ -49,6 +42,7 @@ export const Main = () => {
                         type={collapsed ? 'menu-unfold' : 'menu-fold'}
                         onClick={() => setCollapsed(!collapsed)}
                     />
+                    
                 </Header>
                 <Content
                     style={{
@@ -57,7 +51,6 @@ export const Main = () => {
                         background: '#fff',
                     }}
                 >
-                    Content
                     <Checkers></Checkers>
                 </Content>
             </Layout>
