@@ -52,8 +52,51 @@ class MainScene {
         this.blacks = [];
         this.whites = [];
         this.beatingPawn = null;
+        this.gameStarted = false;
 
-        this.whitesMove = true;
+        this.ws = new WebSocket('ws://localhost:8999');
+        this.playerName = 'player' + Math.floor(Math.random() * 100).toString();
+        var playerName  = this.playerName;
+
+        var webSocket = this.ws;
+        this.ws.onopen = function () {
+            webSocket.send(playerName);
+        };
+
+        var deserialize = this.deserialize;
+          
+        this.ws.onmessage = function (event) {
+            var data = event.data;
+            if(data === 'white') {
+                this.myMove = true;
+                this.gameStarted = true;
+                return;
+            }
+            if(data === 'black') {
+                this.myMove = false;
+                this.gameStarted = true;
+                return;
+            }
+            if(!this.gameStarted)
+            {
+                var players = data.trim().split(",");
+                players.forEach(s => {
+                    if(s !== playerName) {
+                        webSocket.send(s);
+                        this.gameStarted = true;
+                    }
+                });
+                return;
+            }
+
+            
+            
+            deserialize(data);
+            this.myMove = !this.myMove;
+        };
+
+
+        this.myMove = false;
         
         var black = false;
 
@@ -100,8 +143,43 @@ class MainScene {
         this.positions.forEach(pos => pos.draw());
 
         this.pawns.forEach(pawn => pawn.draw());
+
+        this.scoreText = this.add.text(16, 16, 'You have won', { fontSize: '32px', fill: '#ffffff' });
         
     }
+
+    serialize() {
+        var data = {
+            pawns : this.pawns,
+            blacks : this.blacks,
+            whites : this.whites
+        };
+        return JSON.stringify(data, (k,v) => {
+            if(k === 'graphics') return undefined;
+            if(k === 'scene') return undefined;
+            if(k === 'img') return undefined;
+        });
+    }
+
+    deserialize(data) {
+        data = JSON.parse(data);
+        this.blacks = [];
+        this.whites = []
+        data.blacks.forEach(element => {
+            var pw = new Pawn(element.x,element.y,element.color,this.graphics,this);
+            pw.isDame = element.isDame;
+            this.blacks.push(pw);
+        });
+        data.whites.forEach(element => {
+            var pw = new Pawn(element.x,element.y,element.color,this.graphics,this);
+            pw.isDame = element.isDame;
+            this.whites.push(pw);
+        });
+        this.pawns = data.pawns;
+        this.blacks = data.blacks;
+        this.whites = data.whites;
+    }
+
     update() {
         
 
@@ -146,7 +224,9 @@ class MainScene {
         console.log(x);
         console.log(y);
 
-        
+        if(!this.myMove) {
+            return;
+        }
 
         if(this.beatingPawn === null) {
             this.getCurrentMovePawns().forEach(pawn => {
@@ -202,7 +282,7 @@ class MainScene {
                     }
                     if(this.beatingPawn === null) {
                         this.positions.forEach(pos => pos.makeMove());
-                        this.whitesMove = !this.whitesMove;
+                        this.myMove = !this.myMove;
                         this.pawns.forEach(pawn => {
                             if (pawn.color === BLACK_PAWN_COLOR && pawn.y === 0) {
                                 pawn.isDame = true;
@@ -211,6 +291,7 @@ class MainScene {
                                 pawn.isDame = true;
                             }
                         });
+                        this.ws.send(this.serialize());
                     }
                 }
             }
@@ -218,7 +299,7 @@ class MainScene {
     }
 
     getCurrentMoveColor() {
-        if (this.whitesMove) {
+        if (this.myMove) {
             return WHITE_PAWN_COLOR;
         }
 
@@ -226,7 +307,7 @@ class MainScene {
     }
 
     getCurrentMovePawns() {
-        if (this.whitesMove) {
+        if (this.myMove) {
             return this.whites;
         }
 
@@ -234,7 +315,7 @@ class MainScene {
     }
 
     getCurrentOffset() {
-        if (this.whitesMove) {
+        if (this.myMove) {
             return 1;
         }
 
@@ -242,7 +323,7 @@ class MainScene {
     }
 
     getCurrentOppositePawns() {
-        if (this.whitesMove) {
+        if (this.myMove) {
             return this.blacks;
         }
 

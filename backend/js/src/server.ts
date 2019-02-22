@@ -58,6 +58,7 @@ wss.on('connection', (ws: WebSocket) => {
             
         } else {
             games.set(ws, waitingPlayers.get(message));
+            var w = waitingPlayers.get(message);
             waitingPlayers.delete(message);
             var wsKey = null;
             waitingPlayers.forEach((val, key) => {
@@ -68,6 +69,8 @@ wss.on('connection', (ws: WebSocket) => {
             if(wsKey !== null) {
                 waitingPlayers.delete(wsKey);
             }
+            ws.send('white');
+            w.send('black');
             console.log("Start new game for players: " + message + " " + wsKey);
         }
         
