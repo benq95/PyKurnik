@@ -4,6 +4,8 @@ import { Layout, Menu, Icon } from 'antd';
 import { AuthContext } from '../auth/Auth';
 
 import {Checkers} from '../components/Checkers'
+import Lobby from '../pages/Lobby'
+import GameScreen from '../pages/GameScreen'
 
 const { Header, Content, Sider } = Layout;
 
@@ -51,7 +53,7 @@ export const Main = () => {
                         background: '#fff',
                     }}
                 >
-                    <Checkers></Checkers>
+					<GameScreen />
                 </Content>
             </Layout>
         </Layout>
